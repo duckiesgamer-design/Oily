@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>Crime Idioms: Detective Academy</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;font-family:Arial,Helvetica,sans-serif;background:#090d14;color:#fff;overflow:hidden}
+body{user-select:none}
+.screen{display:none;width:100%;height:100%;position:relative}
+.screen.active{display:flex}
+#menu{align-items:center;justify-content:center;text-align:center;background:
+ radial-gradient(circle at 50% 35%,#25334b 0,#101827 35%,#070a10 75%)}
+.menu-card{width:min(92%,720px);padding:42px 28px;border:1px solid #41516c;border-radius:24px;background:rgba(8,12,20,.86);box-shadow:0 25px 80px #000b}
+.badge{display:inline-block;padding:7px 13px;border-radius:99px;background:#9b1c31;font-weight:800;letter-spacing:2px;font-size:12px}
+h1{font-size:clamp(40px,8vw,78px);line-height:.9;margin:18px 0 12px;letter-spacing:3px;text-shadow:0 5px 20px #000}
+.subtitle{color:#b9c5d8;font-size:17px;margin:0 auto 28px;max-width:560px;line-height:1.5}
+button{border:0;cursor:pointer;font-weight:900;letter-spacing:1px}
+.start{padding:17px 42px;border-radius:12px;background:#d5233d;color:#fff;font-size:19px;box-shadow:0 8px 25px #d5233d55;transition:.15s}
+.start:hover{transform:translateY(-2px);background:#ef2946}
+.how{margin-top:22px;color:#8593a9;font-size:13px}
+
+#game{flex-direction:column;background:linear-gradient(#121a28,#0b111b)}
+.topbar{height:74px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:#090d14;border-bottom:1px solid #283449;z-index:5}
+.stat{text-align:center;min-width:90px}.label{display:block;font-size:10px;color:#748197;letter-spacing:1.5px;font-weight:800}.value{font-size:22px;font-weight:900}
+.case{color:#e8b84a}
+.question-area{padding:20px 15px 10px;text-align:center;z-index:2}
+.case-tag{color:#e8b84a;font-size:12px;letter-spacing:2px;font-weight:900}
+.question{font-size:clamp(20px,4vw,34px);font-weight:900;margin:8px auto 0;max-width:950px}
+.hint{font-size:12px;color:#718096;margin-top:7px}
+.range{flex:1;position:relative;overflow:hidden;
+background:
+linear-gradient(90deg,transparent 49.7%,#1b2838 50%,transparent 50.3%),
+linear-gradient(#121d2b 1px,transparent 1px);
+background-size:100% 100%,100% 45px}
+.scene{position:absolute;inset:0;background:linear-gradient(transparent 70%,#080c12 70%);pointer-events:none}
+.city{position:absolute;bottom:0;left:0;width:100%;height:30%;opacity:.45;background:
+linear-gradient(90deg,#060a10 0 7%,transparent 7% 10%,#060a10 10% 20%,transparent 20% 24%,#060a10 24% 34%,transparent 34% 40%,#060a10 40% 49%,transparent 49% 55%,#060a10 55% 67%,transparent 67% 71%,#060a10 71% 84%,transparent 84% 88%,#060a10 88% 100%);
+clip-path:polygon(0 35%,7% 35%,7% 10%,10% 10%,10% 50%,20% 50%,20% 25%,24% 25%,24% 45%,34% 45%,34% 5%,40% 5%,40% 55%,49% 55%,49% 30%,55% 30%,55% 15%,67% 15%,67% 48%,71% 48%,71% 5%,84% 5%,84% 40%,88% 40%,88% 18%,100% 18%,100% 100%,0 100%)}
+.target{position:absolute;width:min(29vw,180px);height:min(29vw,180px);min-width:125px;min-height:125px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;padding:22px;background:#d8dce1;color:#151a22;border:10px solid #b82238;box-shadow:0 10px 35px #0009,0 0 0 4px #f0f0f033;transition:transform .12s,opacity .2s;cursor:crosshair;z-index:3}
+.target:before{content:"";position:absolute;inset:20%;border-radius:50%;border:6px solid #b82238}
+.target:after{content:"";position:absolute;inset:39%;border-radius:50%;background:#b82238}
+.target span{position:relative;z-index:2;font-size:clamp(13px,2.2vw,20px);font-weight:900;max-width:130px}
+.target:hover{transform:scale(1.05)}
+.t1{left:8%;top:17%}.t2{left:50%;top:9%;transform:translateX(-50%)}.t2:hover{transform:translateX(-50%) scale(1.05)}.t3{right:8%;top:17%}
+.target.hit{animation:hit .3s forwards}.target.wrong{animation:wrong .35s}
+@keyframes hit{to{transform:scale(1.4);opacity:0}}@keyframes wrong{25%{transform:translateX(12px)}50%{transform:translateX(-12px)}75%{transform:translateX(8px)}}
+.feedback{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);z-index:10;font-size:clamp(30px,6vw,62px);font-weight:1000;text-shadow:0 5px 25px #000;pointer-events:none;opacity:0}
+.feedback.show{animation:feedback 1s forwards}
+@keyframes feedback{0%{opacity:0;transform:translate(-50%,-40%) scale(.7)}20%,70%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-65%)}}
+.crosshair{position:absolute;width:34px;height:34px;border:2px solid #fff;border-radius:50%;pointer-events:none;z-index:8;transform:translate(-50%,-50%);opacity:.75}
+.crosshair:after,.crosshair:before{content:"";position:absolute;background:#fff}.crosshair:after{width:2px;height:46px;left:14px;top:-8px}.crosshair:before{height:2px;width:46px;left:-8px;top:14px}
+.bottom{height:54px;background:#090d14;border-top:1px solid #283449;display:flex;align-items:center;justify-content:center;color:#77869d;font-size:12px;z-index:5}
+#end{align-items:center;justify-content:center;text-align:center;background:radial-gradient(circle,#202d43,#080b11 70%)}
+.end-card{width:min(92%,600px);padding:40px;border:1px solid #41516c;border-radius:24px;background:#090d14ee}
+.result{font-size:52px;font-weight:1000;margin:10px 0;color:#e8b84a}.small{color:#94a2b8}
+</style>
+</head>
+<body>
+
+<section id="menu" class="screen active">
+  <div class="menu-card">
+    <div class="badge">POLICE TRAINING DIVISION</div>
+    <h1>CRIME<br>IDIOMS</h1>
+    <p class="subtitle">Welcome, Detective. Read the idiom and shoot the target with the correct meaning. There are 8 cases to solve.</p>
+    <button class="start" onclick="startGame()">START CASE</button>
+    <div class="how">3 targets • 1 correct answer • Don't shoot the wrong one</div>
+  </div>
+</section>
+
+<section id="game" class="screen">
+  <div class="topbar">
+    <div class="stat"><span class="label">CASE</span><span class="value case" id="caseNo">01/08</span></div>
+    <div class="stat"><span class="label">SCORE</span><span class="value" id="score">0000</span></div>
+    <div class="stat"><span class="label">COMBO</span><span class="value" id="combo">x0</span></div>
+    <div class="stat"><span class="label">LIVES</span><span class="value" id="lives">♥♥♥</span></div>
+  </div>
+  <div class="question-area">
+    <div class="case-tag">CASE FILE</div>
+    <div class="question" id="question"></div>
+    <div class="hint">Shoot the target containing the correct meaning.</div>
+  </div>
+  <div class="range" id="range">
+    <div class="scene"></div><div class="city"></div>
+    <div class="target t1" onclick="shoot(0)"><span></span></div>
+    <div class="target t2" onclick="shoot(1)"><span></span></div>
+    <div class="target t3" onclick="shoot(2)"><span></span></div>
+    <div class="feedback" id="feedback"></div>
+    <div class="crosshair" id="crosshair"></div>
+  </div>
+  <div class="bottom">🔫 TAP / CLICK A TARGET TO SHOOT</div>
+</section>
+
+<section id="end" class="screen">
+  <div class="end-card">
+    <div class="badge">CASE CLOSED</div>
+    <h1>DETECTIVE REPORT</h1>
+    <div class="result" id="finalScore">0</div>
+    <p class="small" id="finalText"></p>
+    <button class="start" onclick="startGame()">PLAY AGAIN</button>
+  </div>
+</section>
+
+<script>
+const cases=[
+ {idiom:"Caught red-handed",answers:[
+   "Caught while doing something wrong",
+   "Feeling embarrassed",
+   "Running away"],correct:0},
+ {idiom:"Get away with murder",answers:[
+   "Escape from prison",
+   "Do something wrong without being punished",
+   "Commit a serious crime"],correct:1},
+ {idiom:"A smoking gun",answers:[
+   "A gun that has just been fired",
+   "Strong evidence proving someone is guilty",
+   "A dangerous weapon"],correct:1},
+ {idiom:"Behind bars",answers:[
+   "In prison",
+   "Hiding from the police",
+   "Working as a police officer"],correct:0},
+ {idiom:"Take the rap",answers:[
+   "Take responsibility or blame for something",
+   "Arrest someone",
+   "Escape from the police"],correct:0},
+ {idiom:"On the run",answers:[
+   "Exercising",
+   "Being chased or trying to avoid being caught",
+   "Looking for a job"],correct:1},
+ {idiom:"Do time",answers:[
+   "Spend time in prison",
+   "Waste your time",
+   "Work overtime"],correct:0},
+ {idiom:"The long arm of the law",answers:[
+   "A strict police officer",
+   "The power of the law to reach and punish people",
+   "A very long weapon"],correct:1}
+];
+
+let index=0,score=0,combo=0,lives=3,locked=false,shuffled=[];
+const $=id=>document.getElementById(id);
+
+function startGame(){
+ index=0;score=0;combo=0;lives=3;locked=false;
+ $("menu").classList.remove("active");$("end").classList.remove("active");$("game").classList.add("active");
+ loadCase();
+}
+function loadCase(){
+ locked=false;
+ $("caseNo").textContent=String(index+1).padStart(2,"0")+"/08";
+ $("score").textContent=String(score).padStart(4,"0");
+ $("combo").textContent="x"+combo;
+ $("lives").textContent="♥".repeat(lives)+"♡".repeat(3-lives);
+ const c=cases[index];
+ $("question").textContent='What does "'+c.idiom+'" mean?';
+ shuffled=c.answers.map((text,i)=>({text,correct:i===c.correct})).sort(()=>Math.random()-.5);
+ document.querySelectorAll(".target").forEach((el,i)=>{
+   el.classList.remove("hit","wrong");el.style.opacity="1";
+   el.querySelector("span").textContent=shuffled[i].text;
+ });
+}
+function shoot(i){
+ if(locked)return;
+ const target=document.querySelectorAll(".target")[i];
+ if(shuffled[i].correct){
+   locked=true; combo++; score+=100+(combo-1)*25;
+   target.classList.add("hit"); showFeedback("✓ CORRECT","#6ee7a0");
+   setTimeout(()=>{index++; if(index>=cases.length) finish(); else loadCase()},850);
+ }else{
+   target.classList.add("wrong"); lives--; combo=0; score=Math.max(0,score-25);
+   showFeedback("✕ WRONG","#ff667d");
+   $("lives").textContent="♥".repeat(lives)+"♡".repeat(3-lives);
+   $("combo").textContent="x0"; $("score").textContent=String(score).padStart(4,"0");
+   if(lives<=0){locked=true;setTimeout(finish,850)}
+ }
+}
+function showFeedback(txt,color){
+ const f=$("feedback");f.textContent=txt;f.style.color=color;f.classList.remove("show");void f.offsetWidth;f.classList.add("show");
+}
+function finish(){
+ $("game").classList.remove("active");$("end").classList.add("active");
+ $("finalScore").textContent=score+" XP";
+ const correct=Math.round(score/100);
+ $("finalText").textContent="You completed the case file with "+score+" XP. "+(lives>0?"All cases solved — excellent detective work!":"You ran out of lives. Study the idioms and try again.");
+}
+document.addEventListener("mousemove",e=>{
+ const r=$("range").getBoundingClientRect();$("crosshair").style.left=(e.clientX-r.left)+"px";$("crosshair").style.top=(e.clientY-r.top)+"px";
+});
+document.addEventListener("touchmove",e=>{
+ const t=e.touches[0],r=$("range").getBoundingClientRect();$("crosshair").style.left=(t.clientX-r.left)+"px";$("crosshair").style.top=(t.clientY-r.top)+"px";
+},{passive:true});
+</script>
+</body>
+</html>
